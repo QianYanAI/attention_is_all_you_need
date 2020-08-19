@@ -7,7 +7,7 @@ from gensim.models import word2vec
 
 
 def get_stock():
-    jq.auth('13345624026', 'WY192837465')
+    jq.auth(username=None, password=None)
     get_security = jq.get_all_securities(types=['stock'], date=None)
     sec_list_chinese = get_security['display_name'].to_list()
     return sec_list_chinese
@@ -17,15 +17,11 @@ def get_news(num, stock):
     data_tickernews = pd.DataFrame()
     segments = []
     for i in range(1, num):
-        data = pd.read_csv('/Users/alex/Downloads/'
-                           'Sentiment-Analysis-in-Event-Driven-Stock-Price-Movement-Prediction-master/'
-                           'a stock/thefile{}.csv'.format(i))
+        data = pd.read_csv('thefile{}.csv'.format(i))
         data = data.dropna(0)
         data_tickernews = pd.concat([data_tickernews, data[data['newsSummary'].str.contains(stock)]], ignore_index=True)
         data_tickernews.drop_duplicates('newsTitle', 'first')
-    stopwords = [line.strip() for line in codecs.open('/Users/alex/Downloads/'
-                                                      'Sentiment-Analysis-in-Event-Driven-Stock-Price-Movement-Prediction-master/'
-                                                      'a stock/news/scu_stopwords.txt', 'r', 'utf-8').readlines()]
+    stopwords = [line.strip() for line in codecs.open('scu_stopwords.txt', 'r', 'utf-8').readlines()]
     for index, row in data_tickernews.iterrows():
         content = row[2]
         # TextRank 关键词抽取，只获取固定词性
@@ -36,7 +32,7 @@ def get_news(num, stock):
             if word not in stopwords:
                 # 记录全局分词
                 splitedStr += word + ' '
-                segments.append("".join(list(splitedStr)))
+        segments.append("".join(list(splitedStr)))
     output_list = pd.Series(segments)
     output_list.to_csv('news.txt', encoding='utf-8')
 
@@ -53,6 +49,6 @@ def word2vec_news(modelpath):
 
 
 if __name__ == "__main__":
-    # stock_list = get_stock()
+    stock_list = get_stock()
     get_news(30, '茅台')
     word2vec_news('model.bin')
